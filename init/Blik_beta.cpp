@@ -11,15 +11,15 @@ const int LED_GRE = 21;
 
 int pinoPWM = LED_GRE;
 
-void piscada(int p) {
+void piscada(int p, int led, int gapTime) {
   // Piscar o led X vezes
   for (int i = 0; i < p; i++) {
 
     Serial.println("Green" + i);
-    digitalWrite(LED_GRE, HIGH);
-    delay(500);
-    digitalWrite(LED_GRE, LOW);
-    delay(500);
+    digitalWrite(led, HIGH);
+    delay(gapTime);
+    digitalWrite(led, LOW);
+    delay(gapTime);
   }
 }
 
@@ -36,8 +36,8 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
 
-  piscada(5);
-  delay(2000);
+  piscada(5, LED_RED, 200);
+  delay(1000);
 
   for (int i = 0; i < 1; i++) {
     Serial.println("Red" + i);
