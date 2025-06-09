@@ -19,7 +19,13 @@ void loop() {
   Serial.println(tensao_ldr);
   delay(1000); 
 
-  if (leitura_ldr < 4000) digitalWrite(LED, HIGH);
-  else digitalWrite(LED, LOW);
-  delay(200);
+  if (tensao_ldr >= 1.65){
+    Serial.print("Acende: ");
+    digitalWrite(LED, HIGH);
+  } 
+  else {
+    Serial.print("Apaga: ");
+    digitalWrite(LED, LOW);
+    delay(200);
   }
+}
