@@ -25,7 +25,7 @@ void loop() {
   } 
   else {
     Serial.print("Apaga: ");
-    digitalWrite(LED, LOW);
-    delay(200);
+    digitalWrite(LED, LOW);    
   }
+  delay(200);
 }
