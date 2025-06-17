@@ -1,0 +1,190 @@
+#include <DHT.h>
+#include <WiFi.h>
+#include <WebServer.h>
+
+// Configurações da rede WiFi
+const char* ssid = "SEMB2";     // Substitua pelo nome da sua rede WiFi
+const char* password = "12345678"; // Substitua pela senha da sua rede WiFi
+
+// Definir pino do LED
+const int ledPin = 2;
+bool ledStatus = false;
+
+// Definir pino e tipo do sensor DHT
+#define DHTPIN 18     // Pino onde o sensor DHT está conectado (use um pino GPIO disponível)
+#define DHTTYPE DHT11 // DHT11 ou DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// Variáveis para armazenar os valores de temperatura e umidade
+float temperature = 0.0;
+float humidity = 0.0;
+unsigned long lastDHTReadTime = 0;
+const long dhtReadInterval = 2000; // Intervalo de leitura do sensor (2 segundos)
+
+// Criar objeto do servidor web na porta 80
+WebServer server(80);
+
+void setup() {
+  // Iniciar comunicação serial
+  Serial.begin(115200);
+  
+  // Configurar o pino do LED como saída
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW); // Iniciar com o LED desligado
+  
+  // Iniciar o sensor DHT
+  dht.begin();
+  
+  // Conectar ao WiFi
+  WiFi.begin(ssid, password);
+  Serial.println("Conectando ao WiFi...");
+  
+  // Aguardar conexão
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  // Exibir informações da conexão
+  Serial.println("");
+  Serial.println("WiFi conectado!");
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+  
+  // Definir rotas do servidor web
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/on", HTTP_GET, handleLedOn);
+  server.on("/off", HTTP_GET, handleLedOff);
+  server.on("/read", HTTP_GET, handleSensorRead);
+  server.onNotFound(handleNotFound);
+  
+  // Iniciar o servidor web
+  server.begin();
+  Serial.println("Servidor web iniciado!");
+
+  // Fazer primeira leitura do sensor
+  readDHTSensor();
+}
+
+void loop() {
+  // Processar requisições do cliente
+  server.handleClient();
+  
+  // Verificar se é hora de ler o sensor novamente
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastDHTReadTime >= dhtReadInterval) {
+    readDHTSensor();
+    lastDHTReadTime = currentMillis;
+  }
+}
+
+// Função para ler o sensor DHT
+void readDHTSensor() {
+  // Leitura de temperatura e umidade
+  humidity = dht.readHumidity();
+  temperature = dht.readTemperature();
+  
+  // Verificar se as leituras são válidas
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Falha ao ler o sensor DHT!");
+    return;
+  }
+  
+  Serial.print("Umidade: ");
+  Serial.print(humidity);
+  Serial.print("%, Temperatura: ");
+  Serial.print(temperature);
+  Serial.println("°C");
+}
+
+// Função para a página principal
+void handleRoot() {
+  String html = "<!DOCTYPE html>\
+  <html>\
+  <head>\
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\
+    <meta http-equiv='refresh' content='10'>\
+    <title>ESP32 - LED e DHT11</title>\
+    <style>\
+      body { font-family: Arial; text-align: center; margin-top: 50px; }\
+      .button { display: inline-block; padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border-radius: 5px; }\
+      .button-on { background-color: #4CAF50; color: white; }\
+      .button-off { background-color: #f44336; color: white; }\
+      .status { margin: 20px; font-size: 18px; }\
+      .sensor-data { background-color: #f0f0f0; border-radius: 10px; padding: 20px; margin: 20px auto; max-width: 300px; }\
+      .sensor-value { font-size: 24px; margin: 10px; }\
+      .update-btn { background-color: #2196F3; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; }\
+    </style>\
+  </head>\
+  <body>\
+    <h1>ESP32 - Controle de LED e Sensor DHT11</h1>\
+    <div class='status'>Status do LED: ";
+  
+  if (ledStatus) {
+    html += "<span style='color: green;'>LIGADO</span>";
+  } else {
+    html += "<span style='color: red;'>DESLIGADO</span>";
+  }
+  
+  html += "</div>\
+    <div>\
+      <a href='/on'><button class='button button-on'>LIGAR</button></a>\
+      <a href='/off'><button class='button button-off'>DESLIGAR</button></a>\
+    </div>\
+    <div class='sensor-data'>\
+      <h2>Leituras do Sensor DHT11</h2>\
+      <div class='sensor-value'>Temperatura: ";
+  html += temperature;
+  html += " °C </div>\
+      <div class='sensor-value'>Umidade: ";
+  html += humidity;
+  html += " %</div>\
+      <a href='/read' class='update-btn'>Atualizar Agora</a>\
+    </div>\
+    <p>Pagina atualiza automaticamente a cada 10 segundos</p>\
+  </body>\
+  </html>";
+  
+  server.send(200, "text/html", html);
+}
+
+// Função para ligar o LED
+void handleLedOn() {
+  ledStatus = true;
+  digitalWrite(ledPin, HIGH);
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
+// Função para desligar o LED
+void handleLedOff() {
+  ledStatus = false;
+  digitalWrite(ledPin, LOW);
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
+// Função para atualizar a leitura do sensor e redirecionar
+void handleSensorRead() {
+  readDHTSensor();
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
+// Função para página não encontrada
+void handleNotFound() {
+  String message = "Página não encontrada\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMétodo: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArgumentos: ";
+  message += server.args();
+  message += "\n";
+  
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  
+  server.send(404, "text/plain", message);
+}
