@@ -1,0 +1,139 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  margin-top: 50px;
+  background-color: #f4f7f6;
+  color: #333;
+}
+
+h1 {
+  color: #2c3e50;
+  margin-bottom: 40px;
+}
+
+.status-container {
+  margin: 20px auto;
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.status-box h2 {
+  color: #34495e;
+  margin-bottom: 15px;
+}
+
+.status-text {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.status-text[style*="green"] {
+  color: #28a745; /* Cor verde para LIGADO */
+}
+
+.status-text[style*="red"] {
+  color: #dc3545; /* Cor vermelha para DESLIGADO */
+}
+
+.status-text[style*="orange"] {
+  color: #ffc107; /* Cor laranja para PISCANDO */
+}
+
+.button-container {
+  margin: 30px 0;
+}
+
+.button {
+  display: inline-block;
+  padding: 15px 30px;
+  font-size: 18px;
+  margin: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button-on {
+  background-color: #28a745;
+  color: white;
+}
+
+.button-on:hover {
+  background-color: #218838;
+}
+
+.button-off {
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-off:hover {
+  background-color: #c82333;
+}
+
+.button-blink {
+  background-color: #007bff;
+  color: white;
+}
+
+.button-blink:hover {
+  background-color: #0056b3;
+}
+
+.sensor-data {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-data h2 {
+  color: #34495e;
+  margin-bottom: 15px;
+}
+
+.sensor-value {
+  font-size: 24px;
+  margin: 10px 0;
+  color: #555;
+}
+
+.sensor-value span {
+  font-weight: bold;
+  color: #007bff; /* Cor para os valores do sensor */
+}
+
+.update-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 20px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.update-btn:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+.refresh-info {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #777;
+}
