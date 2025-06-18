@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>ESP32 - Painel de Controle</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>ESP32 - Controle de LED e Sensor DHT11</h1>
+
+  <div class="status-container">
+    <div class="status-box">
+      <h2>Status do LED:</h2>
+      <p id="ledStatus" class="status-text">Carregando...</p>
+    </div>
+  </div>
+
+  <div class="button-container">
+    <button class="button button-on" onclick="sendAction('/on')">LIGAR</button>
+    <button class="button button-off" onclick="sendAction('/off')">DESLIGAR</button>
+    <button class="button button-blink" onclick="sendAction('/blink')">PISCAR</button>
+  </div>
+
+  <div class="sensor-data">
+    <h2>Leituras do Sensor DHT11</h2>
+    <div class="sensor-value">Temperatura: <span id="temperature">--</span> °C</div>
+    <div class="sensor-value">Umidade: <span id="humidity">--</span> %</div>
+    <button class="update-btn" onclick="sendAction('/read')">Atualizar Agora</button>
+  </div>
+
+  <p class="refresh-info">Página atualiza automaticamente a cada 5 segundos.</p>
+
+  <script>
+    function sendAction(action) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", action, true);
+      xhr.send();
+    }
+
+    function fetchSensorData() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var data = JSON.parse(this.responseText);
+          document.getElementById("temperature").innerText = data.temperature.toFixed(1);
+          document.getElementById("humidity").innerText = data.humidity.toFixed(1);
+
+          // Atualiza o status do LED
+          var ledStatusElement = document.getElementById("ledStatus");
+          if (data.isBlinking) {
+            ledStatusElement.innerText = "PISCANDO";
+            ledStatusElement.style.color = "orange";
+          } else if (data.ledStatus) {
+            ledStatusElement.innerText = "LIGADO";
+            ledStatusElement.style.color = "green";
+          } else {
+            ledStatusElement.innerText = "DESLIGADO";
+            ledStatusElement.style.color = "red";
+          }
+        }
+      };
+      xhr.open("GET", "/read", true);
+      xhr.send();
+    }
+
+    // Chama a função para buscar dados a cada 5 segundos
+    setInterval(fetchSensorData, 5000);
+    // Chama a função na primeira carga da página
+    fetchSensorData();
+  </script>
+</body>
+</html>
